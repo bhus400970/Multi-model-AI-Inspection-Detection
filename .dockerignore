@@ -1,0 +1,56 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+.venv
+
+# Test files
+Test images/
+Test videos/
+
+# Output files
+outputs/*
+!outputs/.gitkeep
+
+# Uploaded files
+static/uploads/*
+!static/uploads/.gitkeep
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Git
+.git/
+.gitignore
+
+# Documentation
+*.md
+!README.md
+
+# Scripts (not needed in container)
+*.bat
+*.sh
+install.bat
+install.sh
+run.bat
+run.sh
+
+# Logs
+*.log
+
+# Environment variables (should be passed at runtime)
+.env
+.env.local

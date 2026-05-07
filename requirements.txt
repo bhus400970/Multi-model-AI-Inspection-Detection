@@ -1,0 +1,73 @@
+# =============================================================================
+# InspectionVision Multi-Model Detection System
+# requirements.txt  –  Compatible with Python 3.10, 3.11, 3.12, 3.13, 3.14
+# =============================================================================
+#
+
+#      
+torch>=2.3.0
+torchvision>=0.18.0
+torchaudio>=2.3.0
+
+# ── NumPy  [CRITICAL: must stay <2.0] ─────────────────────────────────────
+# Upper cap enforced twice: here and again in install.bat after full install.
+numpy>=1.24.0,<2.0
+
+# ── FastAPI & Server ───────────────────────────────────────────────────────
+fastapi>=0.104.0
+uvicorn[standard]>=0.24.0
+python-multipart>=0.0.6
+websockets>=12.0
+
+# ── YOLO & Computer Vision ─────────────────────────────────────────────────
+# ultralytics >=8.3.0 : adds C3k2 block required by YOLOv11 .pt files
+# ultralytics >=8.4.7 : fixes Pillow 12 _Ink import error
+# Using >=8.3.0 here; Pillow is pinned below 12 to avoid the _Ink issue on
+# older 8.3.x builds in case pip picks one of those.
+ultralytics>=8.3.0
+
+# opencv-python 4.10+ has cp314 wheels; 4.8.x did not.
+opencv-python>=4.10.0.84
+
+# Pillow 11.1 is the safe universal version:
+#   - Supports Python 3.10 through 3.14 (cp314 wheels shipped in 11.x)
+#   - Does NOT trigger the _Ink import error that Pillow 12.0 introduced
+#   - If you specifically want Pillow 12+, also upgrade ultralytics>=8.4.7
+Pillow>=11.1.0,<12.0.0
+
+# ── FFmpeg Video Conversion ───────────────────────────────────────────────
+imageio-ffmpeg>=0.4.8
+
+# ── Core Scientific Stack ──────────────────────────────────────────────────
+scipy>=1.11.0
+
+# ── Machine Learning ───────────────────────────────────────────────────────
+# timm 1.0+ restructured package layout; 0.9.x has no cp313/cp314 wheels.
+timm>=1.0.0
+
+# scikit-learn 1.5+ has wheels for Python 3.10–3.14.
+# scikit-learn 1.7+ requires Python >=3.10 (our minimum anyway).
+scikit-learn>=1.5.0
+
+# albumentations 1.4+ is compatible with updated Pillow/numpy/scikit-learn.
+albumentations>=1.4.0
+
+# ── Data Processing & Visualisation ───────────────────────────────────────
+pandas>=2.2.0
+matplotlib>=3.8.0
+seaborn>=0.13.2
+tqdm>=4.66.1
+
+# ── Model Export & Optimisation ───────────────────────────────────────────
+# onnx 1.17+        : has cp313/cp314 wheels
+# onnxruntime 1.20+ : has cp310–cp313 wheels; cp314 added in 1.22+
+#onnx==1.15.0
+#onnxruntime==1.16.3
+
+# ── Config & Logging ──────────────────────────────────────────────────────
+pyyaml>=6.0.1
+python-dotenv>=1.0.0
+
+# ── Optional: TensorBoard ─────────────────────────────────────────────────
+# 2.17+ resolves grpcio pin conflicts present in 2.15.x
+tensorboard>=2.17.0
