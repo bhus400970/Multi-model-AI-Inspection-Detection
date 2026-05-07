@@ -557,11 +557,6 @@ To contribute to this project:
 4. Push to the branch (`git push origin feature/AmazingFeature`)
 5. Open a Pull Request
 
----
-
-##  License
-
-This project is proprietary software owned by Yokogawa Electric Corporation.
 
 ---
 
@@ -594,6 +589,4 @@ For issues and questions:
   - Real-time IP camera streaming
   - Web dashboard interface
 
----
 
-**Made with  by Yokogawa Electric Corporation**
