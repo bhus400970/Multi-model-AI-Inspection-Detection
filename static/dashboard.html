@@ -1,0 +1,2508 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>InspectionVision - Multi-Model AI Detection Dashboard</title>
+    
+    <!-- Theme initialization to prevent flash of unstyled content -->
+    <script>
+        (function() {
+            const theme = localStorage.getItem('theme') || 'dark';
+            document.documentElement.setAttribute('data-theme', theme);
+            document.body.setAttribute('data-theme', theme);
+        })();
+    </script>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            /* Dark Mode (Default) */
+            --primary: #6b8dd6;
+            --primary-dark: #5a7bc0;
+            --primary-light: #8ba8e8;
+            --accent: #00d4aa;
+            --accent-dark: #00b894;
+            --bg-dark: #0f1729;
+            --bg-card: #1a2744;
+            --bg-card-hover: #243352;
+            --bg-input: #162035;
+            --text-white: #ffffff;
+            --text-gray: #c5d0e6;
+            --text-muted: #8a9bb5;
+            --border: #2d3f5f;
+            --border-light: #3d5070;
+            --success: #22d89e;
+            --danger: #ff6b6b;
+            --warning: #ffb347;
+            --critical: #e74c3c;
+            --high: #ff8c42;
+            --medium: #ffc107;
+            --low: #28a745;
+            --corrosion-color: #ff6b6b;
+            --ppe-color: #4ecdc4;
+            --inspection-color: #ffd93d;
+        }
+
+        /* Light Mode */
+        [data-theme="light"] {
+            --primary: #4a6fc4;
+            --primary-dark: #3a5ba8;
+            --primary-light: #6b8dd6;
+            --accent: #00b894;
+            --accent-dark: #009d7e;
+            --bg-dark: #f0f4f8;
+            --bg-card: #ffffff;
+            --bg-card-hover: #f8fafc;
+            --bg-input: #e8ecf0;
+            --text-white: #1a2744;
+            --text-gray: #4a5568;
+            --text-muted: #718096;
+            --border: #e2e8f0;
+            --border-light: #cbd5e0;
+            --success: #22d89e;
+            --danger: #e53e3e;
+            --warning: #dd9a00;
+            --critical: #c53030;
+            --high: #dd6b20;
+            --medium: #d69e2e;
+            --low: #22a845;
+            --corrosion-color: #e53e3e;
+            --ppe-color: #319795;
+            --inspection-color: #d69e2e;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-white);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .bg-gradient {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(ellipse at 20% 20%, rgba(107, 141, 214, 0.06) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 80%, rgba(0, 212, 170, 0.04) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* Navbar */
+        .navbar {
+            background: rgba(15, 23, 41, 0.95);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border);
+            padding: 0.75rem 2rem;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+            transition: background 0.3s ease, border-color 0.3s ease;
+        }
+
+        [data-theme="light"] .navbar {
+            background: rgba(240, 244, 248, 0.95);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .nav-content {
+            max-width: 1600px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo-icon {
+            width: 42px;
+            height: 42px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            font-weight: 700;
+        }
+
+        .logo-text {
+            font-size: 1.3rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--text-white) 0%, var(--primary-light) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 1.5rem;
+            align-items: center;
+        }
+
+        .nav-link {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 500;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .nav-link:hover, .nav-link.active {
+            color: var(--text-white);
+            background: rgba(107, 141, 214, 0.15);
+        }
+
+        .nav-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background: rgba(34, 216, 158, 0.1);
+            border: 1px solid var(--success);
+            border-radius: 20px;
+            font-size: 0.8rem;
+            color: var(--success);
+        }
+
+        .theme-toggle {
+            background: transparent;
+            border: 1px solid var(--border);
+            border-radius: 50%;
+            width: 36px;
+            height: 36px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-gray);
+            transition: all 0.3s ease;
+            margin-right: 8px;
+            position: relative;
+        }
+
+        .theme-toggle:hover {
+            background: var(--bg-card-hover);
+            color: var(--primary);
+            border-color: var(--primary);
+            transform: rotate(15deg);
+        }
+
+        .theme-toggle .moon-icon {
+            width: 1.2rem;
+            height: 1.2rem;
+            stroke: currentColor;
+            transition: transform 0.3s ease, opacity 0.3s ease;
+            opacity: 1;
+            display: block;
+            position: relative;
+        }
+
+        .theme-toggle .sun-icon {
+            width: 1.2rem;
+            height: 1.2rem;
+            stroke: currentColor;
+            transition: transform 0.3s ease, opacity 0.3s ease;
+            opacity: 0;
+            display: none;
+            position: absolute;
+        }
+
+        [data-theme="light"] .theme-toggle .moon-icon {
+            opacity: 0;
+            display: none;
+        }
+
+        [data-theme="light"] .theme-toggle .sun-icon {
+            opacity: 1;
+            display: block;
+        }
+
+        [data-theme="light"] .theme-toggle {
+            background: var(--bg-input);
+            border-color: var(--border);
+            color: var(--text-gray);
+        }
+
+        [data-theme="light"] .theme-toggle:hover {
+            background: var(--bg-card-hover);
+            color: var(--primary);
+            border-color: var(--primary);
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--success);
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(34, 216, 158, 0.4); }
+            50% { opacity: 0.8; box-shadow: 0 0 0 8px rgba(34, 216, 158, 0); }
+        }
+
+        /* Main Container */
+        .main-container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 80px 1.5rem 2rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Dashboard Header */
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .dashboard-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .dashboard-subtitle {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        /* Model Stats Cards */
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        @media (max-width: 1200px) {
+            .stats-row { grid-template-columns: repeat(2, 1fr); }
+        }
+
+        @media (max-width: 600px) {
+            .stats-row { grid-template-columns: 1fr; }
+        }
+
+        .stat-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.25rem;
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover {
+            border-color: var(--primary);
+            transform: translateY(-2px);
+        }
+
+        .stat-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.75rem;
+        }
+
+        .stat-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+        }
+
+        .stat-icon.corrosion { background: rgba(255, 107, 107, 0.2); color: var(--corrosion-color); }
+        .stat-icon.ppe { background: rgba(78, 205, 196, 0.2); color: var(--ppe-color); }
+        .stat-icon.inspection { background: rgba(255, 217, 61, 0.2); color: var(--inspection-color); }
+        .stat-icon.stream { background: rgba(107, 141, 214, 0.2); color: var(--primary); }
+
+        .stat-value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--text-white);
+        }
+
+        .stat-label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        .stat-change {
+            font-size: 0.75rem;
+            padding: 2px 8px;
+            border-radius: 4px;
+        }
+
+        .stat-change.up { background: rgba(34, 216, 158, 0.2); color: var(--success); }
+        .stat-change.down { background: rgba(255, 107, 107, 0.2); color: var(--danger); }
+
+        /* Model Selection Tabs */
+        .model-tabs {
+            display: flex;
+            gap: 0.75rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .model-tab {
+            padding: 0.75rem 1.5rem;
+            background: var(--bg-card);
+            border: 2px solid var(--border);
+            border-radius: 10px;
+            font-family: 'Poppins', sans-serif;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .model-tab:hover {
+            border-color: var(--primary);
+            color: var(--text-white);
+        }
+
+        .model-tab.active {
+            background: linear-gradient(135deg, rgba(107, 141, 214, 0.2) 0%, rgba(0, 212, 170, 0.1) 100%);
+            border-color: var(--primary);
+            color: var(--text-white);
+        }
+
+        .model-tab.corrosion.active { border-color: var(--corrosion-color); }
+        .model-tab.ppe.active { border-color: var(--ppe-color); }
+        .model-tab.inspection.active { border-color: var(--inspection-color); }
+
+        .model-tab i {
+            font-size: 1rem;
+        }
+
+        /* Model Panel */
+        .model-panel {
+            display: none;
+            animation: fadeIn 0.4s ease;
+        }
+
+        .model-panel.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Input Source Selection */
+        .input-sources {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        @media (max-width: 1000px) {
+            .input-sources { grid-template-columns: repeat(2, 1fr); }
+        }
+
+        @media (max-width: 600px) {
+            .input-sources { grid-template-columns: 1fr; }
+        }
+
+        .source-card {
+            background: var(--bg-card);
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            padding: 1.25rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+
+        .source-card:hover {
+            border-color: var(--primary);
+            background: var(--bg-card-hover);
+        }
+
+        .source-card.active {
+            border-color: var(--accent);
+            background: rgba(0, 212, 170, 0.1);
+        }
+
+        .source-icon {
+            font-size: 2rem;
+            margin-bottom: 0.75rem;
+            color: var(--primary);
+        }
+
+        .source-card.active .source-icon {
+            color: var(--accent);
+        }
+
+        .source-title {
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--text-white);
+            margin-bottom: 0.25rem;
+        }
+
+        .source-desc {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        /* Upload/Input Section */
+        .input-section {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .input-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .input-title {
+            font-size: 1rem;
+            font-weight: 600;
+        }
+
+        /* Drop Zone */
+        .drop-zone {
+            border: 2px dashed var(--border-light);
+            border-radius: 12px;
+            padding: 2rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: var(--bg-input);
+        }
+
+        .drop-zone:hover, .drop-zone.dragover {
+            border-color: var(--primary);
+            background: rgba(107, 141, 214, 0.05);
+        }
+
+        .drop-zone-icon {
+            font-size: 2.5rem;
+            color: var(--primary);
+            margin-bottom: 1rem;
+        }
+
+        .drop-zone-text {
+            font-size: 0.95rem;
+            color: var(--text-gray);
+            margin-bottom: 0.5rem;
+        }
+
+        .drop-zone-hint {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        .file-input { display: none; }
+
+        /* Camera/Stream Input */
+        .camera-input {
+            display: none;
+        }
+
+        .camera-input.active {
+            display: block;
+        }
+
+        .camera-url-input {
+            width: 100%;
+            padding: 0.875rem 1rem;
+            background: var(--bg-input);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text-white);
+            font-family: 'Poppins', sans-serif;
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+        }
+
+        .camera-url-input::placeholder {
+            color: var(--text-muted);
+        }
+
+        .camera-url-input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        /* Buttons */
+        .btn-row {
+            display: flex;
+            gap: 0.75rem;
+            margin-top: 1rem;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            font-family: 'Poppins', sans-serif;
+            font-weight: 600;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(107, 141, 214, 0.4);
+        }
+
+        .btn-secondary {
+            background: var(--bg-input);
+            color: var(--text-gray);
+            border: 1px solid var(--border);
+        }
+
+        .btn-secondary:hover {
+            background: var(--border);
+            color: var(--text-white);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, var(--accent) 0%, var(--accent-dark) 100%);
+            color: var(--bg-dark);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, var(--danger) 0%, #cc5555 100%);
+            color: white;
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Results Grid */
+        .results-grid {
+            display: grid;
+            grid-template-columns: 1fr 400px;
+            gap: 1.5rem;
+        }
+
+        @media (max-width: 1100px) {
+            .results-grid { grid-template-columns: 1fr; }
+        }
+
+        /* Media Display Panel */
+        .media-panel {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            overflow: hidden;
+        }
+
+        .media-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 1.25rem;
+            border-bottom: 1px solid var(--border);
+            background: var(--bg-input);
+        }
+
+        .media-tabs {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .media-tab {
+            padding: 0.5rem 1rem;
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            font-family: 'Poppins', sans-serif;
+            font-size: 0.8rem;
+            font-weight: 500;
+            cursor: pointer;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+        }
+
+        .media-tab:hover { color: var(--text-white); }
+
+        .media-tab.active {
+            color: var(--primary);
+            background: rgba(107, 141, 214, 0.15);
+        }
+
+        .media-container {
+            padding: 1rem;
+            min-height: 400px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--bg-input);
+            position: relative;
+        }
+
+        .media-inner {
+            position: relative;
+            display: inline-block;
+            max-width: 100%;
+        }
+
+        .result-image, .result-video, .live-feed {
+            max-width: 100%;
+            max-height: 600px;
+            width: auto;
+            height: auto;
+            border-radius: 8px;
+            object-fit: contain;
+            display: block;
+        }
+
+        .overlay-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            pointer-events: none;
+            border-radius: 8px;
+        }
+
+        .media-actions {
+            padding: 1rem;
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+        }
+
+        .stream-controls {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        /* Live Stream Indicator */
+        .live-indicator {
+            display: none;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: rgba(255, 107, 107, 0.15);
+            border: 1px solid var(--danger);
+            border-radius: 20px;
+            font-size: 0.8rem;
+            color: var(--danger);
+        }
+
+        .live-indicator.active {
+            display: flex;
+        }
+
+        .live-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--danger);
+            border-radius: 50%;
+            animation: livePulse 1s infinite;
+        }
+
+        @keyframes livePulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+
+        /* Analysis Panel */
+        .analysis-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .panel-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.25rem;
+        }
+
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .panel-title {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--text-white);
+        }
+
+        /* Detection Results */
+        .detection-list {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .detection-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem;
+            background: var(--bg-input);
+            border-radius: 8px;
+            margin-bottom: 0.5rem;
+        }
+
+        .detection-class {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .class-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+
+        .class-dot.corrosion { background: var(--corrosion-color); }
+        .class-dot.crack { background: var(--warning); }
+        .class-dot.leak { background: #9b59b6; }
+        .class-dot.Person { background: #e67e22; }
+        .class-dot.Gloves { background: #1abc9c; }
+        .class-dot.Goggles { background: #f39c12; }
+        .class-dot.Hardhat { background: #3498db; }
+        .class-dot.Mask { background: #e74c3c; }
+        .class-dot.Safety-Vest { background: var(--ppe-color); }
+
+        .class-name {
+            font-size: 0.85rem;
+            color: var(--text-white);
+        }
+
+        .class-count {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        .detection-confidence {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        /* Metrics Grid */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.75rem;
+        }
+
+        .metric-item {
+            background: var(--bg-input);
+            padding: 1rem;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .metric-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-white);
+        }
+
+        .metric-label {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            margin-top: 0.25rem;
+        }
+
+        /* Risk Level */
+        .risk-level {
+            margin-top: 1rem;
+            padding: 1rem;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .risk-level.critical { background: rgba(231, 76, 60, 0.15); border: 1px solid var(--critical); }
+        .risk-level.high { background: rgba(255, 140, 66, 0.15); border: 1px solid var(--high); }
+        .risk-level.medium { background: rgba(255, 193, 7, 0.15); border: 1px solid var(--medium); }
+        .risk-level.low { background: rgba(40, 167, 69, 0.15); border: 1px solid var(--low); }
+        .risk-level.none { background: rgba(138, 155, 181, 0.15); border: 1px solid var(--text-muted); }
+
+        .risk-label {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            margin-bottom: 0.25rem;
+        }
+
+        .risk-value {
+            font-size: 1.2rem;
+            font-weight: 700;
+        }
+
+        .risk-value.critical { color: var(--critical); }
+        .risk-value.high { color: var(--high); }
+        .risk-value.medium { color: var(--medium); }
+        .risk-value.low { color: var(--low); }
+
+        /* Error Message */
+        .error-message {
+            background: rgba(231, 76, 60, 0.15);
+            border: 1px solid var(--critical);
+            color: var(--critical);
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            display: none;
+        }
+
+        .error-message.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        /* Loading Overlay */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(15, 23, 41, 0.95);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            gap: 1.5rem;
+            z-index: 2000;
+        }
+
+        .loading-overlay.active { display: flex; }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid var(--border);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .loading-text {
+            font-size: 1rem;
+            color: var(--text-gray);
+        }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            padding: 1.5rem;
+            color: var(--text-muted);
+            font-size: 0.8rem;
+            border-top: 1px solid var(--border);
+            margin-top: 2rem;
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: var(--bg-dark); }
+        ::-webkit-scrollbar-thumb { background: var(--border-light); border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--primary); }
+
+        /* Model Info Cards */
+        .model-info {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        @media (max-width: 900px) {
+            .model-info { grid-template-columns: 1fr; }
+        }
+
+        .model-info-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.25rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .model-info-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+        }
+
+        .model-info-card.corrosion::before { background: var(--corrosion-color); }
+        .model-info-card.ppe::before { background: var(--ppe-color); }
+        .model-info-card.inspection::before { background: var(--inspection-color); }
+
+        .model-info-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .model-info-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+        }
+
+        .model-info-icon.corrosion { background: rgba(255, 107, 107, 0.2); color: var(--corrosion-color); }
+        .model-info-icon.ppe { background: rgba(78, 205, 196, 0.2); color: var(--ppe-color); }
+        .model-info-icon.inspection { background: rgba(255, 217, 61, 0.2); color: var(--inspection-color); }
+
+        .model-info-title {
+            font-size: 1rem;
+            font-weight: 600;
+        }
+
+        .model-info-classes {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .class-tag {
+            padding: 0.25rem 0.75rem;
+            background: var(--bg-input);
+            border-radius: 12px;
+            font-size: 0.75rem;
+            color: var(--text-gray);
+        }
+
+        /* Hide sections */
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body>
+    <div class="bg-gradient"></div>
+    
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="spinner"></div>
+        <div class="loading-text" id="loadingText">Processing...</div>
+    </div>
+
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="nav-content">
+            <div class="logo">
+                <div class="logo-icon" style="background: transparent; border: none;">
+                    <svg viewBox="0 0 24 24" style="width: 32px; height: 32px;">
+                        <polygon points="12,2 22,12 12,22 2,12" fill="#ffed00"/>
+                    </svg>
+                </div>
+                <div class="logo-text">YOKOGAWA</div>
+            </div>
+            <div class="nav-links">
+                <span class="nav-link active" data-section="corrosion">Corrosion</span>
+                <span class="nav-link" data-section="ppe">PPE</span>
+                <span class="nav-link" data-section="inspection">Inspection</span>
+            </div>
+            <div class="nav-status">
+                <button class="theme-toggle" id="themeToggle" title="Toggle Dark/Light Mode">
+                    <svg class="moon-icon" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke="currentColor">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+                    </svg>
+                    <svg class="sun-icon" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke="currentColor">
+                        <circle cx="12" cy="12" r="5"/>
+                        <line x1="12" y1="1" x2="12" y2="3"/>
+                        <line x1="12" y1="21" x2="12" y2="23"/>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+                        <line x1="1" y1="12" x2="3" y2="12"/>
+                        <line x1="21" y1="12" x2="23" y2="12"/>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+                    </svg>
+                </button>
+                <span class="status-dot"></span>
+                <span>System Online</span>
+            </div>
+        </div>
+    </nav>
+
+    <div class="main-container">
+        <!-- Dashboard Header -->
+        <div class="dashboard-header">
+            <div>
+                <h1 class="dashboard-title">AI Detection Dashboard</h1>
+                <p class="dashboard-subtitle">Multi-Model Vision System for Industrial Inspection </p>
+            </div>
+        </div>
+
+        <!-- Error Message -->
+        <div class="error-message" id="errorMessage"></div>
+
+        <!-- Model Info Cards -->
+        <div class="model-info">
+            <div class="model-info-card corrosion">
+                <div class="model-info-header">
+                    <div class="model-info-icon corrosion"><i class="fas fa-biohazard"></i></div>
+                    <div class="model-info-title">Corrosion Detection</div>
+                </div>
+                <div class="model-info-classes">
+                    <span class="class-tag">Corrosion</span>
+                </div>
+            </div>
+            <div class="model-info-card ppe">
+                <div class="model-info-header">
+                    <div class="model-info-icon ppe"><i class="fas fa-user-shield"></i></div>
+                    <div class="model-info-title">PPE Detection</div>
+                </div>
+                <div class="model-info-classes">
+                    <span class="class-tag">Person</span>
+                    <span class="class-tag">Gloves</span>
+                    <span class="class-tag">Goggles</span>
+                    <span class="class-tag">Hardhat</span>
+                    <span class="class-tag">Mask</span>
+                    <span class="class-tag">Safety Vest</span>
+                </div>
+            </div>
+            <div class="model-info-card inspection">
+                <div class="model-info-header">
+                    <div class="model-info-icon inspection"><i class="fas fa-clipboard-check"></i></div>
+                    <div class="model-info-title">Inspection Detection</div>
+                </div>
+                <div class="model-info-classes">
+                    <span class="class-tag">Corrosion</span>
+                    <span class="class-tag">Crack</span>
+                    <span class="class-tag">Leak</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Model Selection Tabs -->
+        <div class="model-tabs">
+            <button class="model-tab corrosion active" data-model="corrosion">
+                <i class="fas fa-biohazard"></i>
+                Corrosion Model
+            </button>
+            <button class="model-tab ppe" data-model="ppe">
+                <i class="fas fa-hard-hat"></i>
+                PPE Model
+            </button>
+            <button class="model-tab inspection" data-model="inspection">
+                <i class="fas fa-clipboard-check"></i>
+                Inspection Model
+            </button>
+        </div>
+
+        <!-- Model Panels Container -->
+        <div id="modelPanelsContainer">
+            <!-- CORROSION PANEL -->
+            <div class="model-panel active" id="corrosionPanel" data-model="corrosion">
+                <!-- Input Source Selection -->
+                <div class="input-sources">
+                    <div class="source-card active" data-source="image">
+                        <div class="source-icon"><i class="fas fa-image"></i></div>
+                        <div class="source-title">Image Upload</div>
+                        <div class="source-desc">JPG, PNG, WebP</div>
+                    </div>
+                    <div class="source-card" data-source="video">
+                        <div class="source-icon"><i class="fas fa-video"></i></div>
+                        <div class="source-title">Video Upload</div>
+                        <div class="source-desc">MP4, AVI, MOV</div>
+                    </div>
+                    <div class="source-card" data-source="webcam">
+                        <div class="source-icon"><i class="fas fa-camera"></i></div>
+                        <div class="source-title">Live Camera</div>
+                        <div class="source-desc">Webcam/USB</div>
+                    </div>
+                    <div class="source-card" data-source="ipcamera">
+                        <div class="source-icon"><i class="fas fa-broadcast-tower"></i></div>
+                        <div class="source-title">IP Camera</div>
+                        <div class="source-desc">RTSP/HTTP Stream</div>
+                    </div>
+                </div>
+
+                <!-- Input Section -->
+                <div class="input-section">
+                    <div class="input-header">
+                        <div class="input-title">Upload Media</div>
+                        <div class="live-indicator" id="corrosionLiveIndicator">
+                            <div class="live-dot"></div>
+                            <span>LIVE</span>
+                        </div>
+                    </div>
+
+                    <!-- Image/Video Upload -->
+                    <div class="upload-input active" data-input="upload">
+                        <div class="drop-zone" data-model="corrosion">
+                            <div class="drop-zone-icon"><i class="fas fa-cloud-upload-alt"></i></div>
+                            <div class="drop-zone-text">Drop file here or click to browse</div>
+                            <div class="drop-zone-hint">Supports images and videos up to 500MB</div>
+                            <input type="file" class="file-input" accept="image/*,video/*">
+                        </div>
+                    </div>
+
+                    <!-- Webcam Input -->
+                    <div class="camera-input" data-input="webcam">
+                        <div class="btn-row">
+                            <button class="btn btn-primary start-webcam-btn"><i class="fas fa-video"></i> Start Webcam</button>
+                            <button class="btn btn-danger stop-webcam-btn" disabled><i class="fas fa-stop"></i> Stop</button>
+                        </div>
+                    </div>
+
+                    <!-- IP Camera Input -->
+                    <div class="camera-input" data-input="ipcamera">
+                        <input type="text" class="camera-url-input" placeholder="Enter RTSP/HTTP stream URL (e.g., rtsp://192.168.1.100:554/stream)">
+                        <div class="btn-row">
+                            <button class="btn btn-primary connect-stream-btn"><i class="fas fa-plug"></i> Connect Stream</button>
+                            <button class="btn btn-danger disconnect-stream-btn" disabled><i class="fas fa-times"></i> Disconnect</button>
+                        </div>
+                    </div>
+
+                    <!-- Buttons -->
+                    <div class="btn-row">
+                        <button class="btn btn-primary analyze-btn" disabled><i class="fas fa-search"></i> Analyze</button>
+                        <button class="btn btn-secondary clear-btn"><i class="fas fa-trash"></i> Clear</button>
+                    </div>
+                </div>
+
+                <!-- Results Grid -->
+                <div class="results-grid hidden" data-results="corrosion">
+                    <div class="media-panel">
+                        <div class="media-header">
+                            <div class="media-tabs">
+                                <button class="media-tab active" data-tab="detection">Detection</button>
+                                <button class="media-tab" data-tab="original">Original</button>
+                            </div>
+                            <div class="stream-controls hidden">
+                                <button class="btn btn-secondary btn-sm pause-btn"><i class="fas fa-pause"></i></button>
+                                <button class="btn btn-secondary btn-sm snapshot-btn"><i class="fas fa-camera"></i></button>
+                            </div>
+                        </div>
+                        <div class="media-container">
+                            <div class="media-inner">
+                                <img class="result-image" style="display:none;">
+                                <video class="result-video" controls style="display:none;"></video>
+                                <video class="live-feed" autoplay muted playsinline style="display:none;"></video>
+                                <canvas class="overlay-canvas"></canvas>
+                            </div>
+                        </div>
+                        <div class="media-actions">
+                            <div class="btn-row">
+                                <button class="btn btn-success download-btn"><i class="fas fa-download"></i> Download</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="analysis-panel">
+                        <div class="panel-card">
+                            <div class="panel-header">
+                                <span class="panel-title">Detection Results</span>
+                            </div>
+                            <div class="detection-list"></div>
+                        </div>
+
+                        <div class="panel-card">
+                            <div class="panel-header">
+                                <span class="panel-title">Analysis Metrics</span>
+                            </div>
+                            <div class="metrics-grid">
+                                <div class="metric-item">
+                                    <div class="metric-value total-detections">0</div>
+                                    <div class="metric-label">Total Detections</div>
+                                </div>
+                                <div class="metric-item">
+                                    <div class="metric-value avg-confidence">0%</div>
+                                    <div class="metric-label">Avg Confidence</div>
+                                </div>
+                                <div class="metric-item">
+                                    <div class="metric-value processing-time">0ms</div>
+                                    <div class="metric-label">Processing Time</div>
+                                </div>
+                                <div class="metric-item">
+                                    <div class="metric-value detection-quality">--</div>
+                                    <div class="metric-label">Detection Quality</div>
+                                </div>
+                            </div>
+                            <div class="risk-level low">
+                                <div class="risk-label">Risk Level</div>
+                                <div class="risk-value low">Low</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PPE PANEL -->
+            <div class="model-panel" id="ppePanel" data-model="ppe">
+                <div class="input-sources">
+                    <div class="source-card active" data-source="image">
+                        <div class="source-icon"><i class="fas fa-image"></i></div>
+                        <div class="source-title">Image Upload</div>
+                        <div class="source-desc">JPG, PNG, WebP</div>
+                    </div>
+                    <div class="source-card" data-source="video">
+                        <div class="source-icon"><i class="fas fa-video"></i></div>
+                        <div class="source-title">Video Upload</div>
+                        <div class="source-desc">MP4, AVI, MOV</div>
+                    </div>
+                    <div class="source-card" data-source="webcam">
+                        <div class="source-icon"><i class="fas fa-camera"></i></div>
+                        <div class="source-title">Live Camera</div>
+                        <div class="source-desc">Webcam/USB</div>
+                    </div>
+                    <div class="source-card" data-source="ipcamera">
+                        <div class="source-icon"><i class="fas fa-broadcast-tower"></i></div>
+                        <div class="source-title">IP Camera</div>
+                        <div class="source-desc">RTSP/HTTP Stream</div>
+                    </div>
+                </div>
+
+                <div class="input-section">
+                    <div class="input-header">
+                        <div class="input-title">Upload Media</div>
+                        <div class="live-indicator" id="ppeLiveIndicator">
+                            <div class="live-dot"></div>
+                            <span>LIVE</span>
+                        </div>
+                    </div>
+
+                    <div class="upload-input active" data-input="upload">
+                        <div class="drop-zone" data-model="ppe">
+                            <div class="drop-zone-icon"><i class="fas fa-cloud-upload-alt"></i></div>
+                            <div class="drop-zone-text">Drop file here or click to browse</div>
+                            <div class="drop-zone-hint">Supports images and videos up to 500MB</div>
+                            <input type="file" class="file-input" accept="image/*,video/*">
+                        </div>
+                    </div>
+
+                    <div class="camera-input" data-input="webcam">
+                        <div class="btn-row">
+                            <button class="btn btn-primary start-webcam-btn"><i class="fas fa-video"></i> Start Webcam</button>
+                            <button class="btn btn-danger stop-webcam-btn" disabled><i class="fas fa-stop"></i> Stop</button>
+                        </div>
+                    </div>
+
+                    <div class="camera-input" data-input="ipcamera">
+                        <input type="text" class="camera-url-input" placeholder="Enter RTSP/HTTP stream URL (e.g., rtsp://192.168.1.100:554/stream)">
+                        <div class="btn-row">
+                            <button class="btn btn-primary connect-stream-btn"><i class="fas fa-plug"></i> Connect Stream</button>
+                            <button class="btn btn-danger disconnect-stream-btn" disabled><i class="fas fa-times"></i> Disconnect</button>
+                        </div>
+                    </div>
+
+                    <div class="btn-row">
+                        <button class="btn btn-primary analyze-btn" disabled><i class="fas fa-search"></i> Analyze</button>
+                        <button class="btn btn-secondary clear-btn"><i class="fas fa-trash"></i> Clear</button>
+                    </div>
+                </div>
+
+                <div class="results-grid hidden" data-results="ppe">
+                    <div class="media-panel">
+                        <div class="media-header">
+                            <div class="media-tabs">
+                                <button class="media-tab active" data-tab="detection">Detection</button>
+                                <button class="media-tab" data-tab="original">Original</button>
+                            </div>
+                            <div class="stream-controls hidden">
+                                <button class="btn btn-secondary btn-sm pause-btn"><i class="fas fa-pause"></i></button>
+                                <button class="btn btn-secondary btn-sm snapshot-btn"><i class="fas fa-camera"></i></button>
+                            </div>
+                        </div>
+                        <div class="media-container">
+                            <div class="media-inner">
+                                <img class="result-image" style="display:none;">
+                                <video class="result-video" controls style="display:none;"></video>
+                                <video class="live-feed" autoplay muted playsinline style="display:none;"></video>
+                                <canvas class="overlay-canvas"></canvas>
+                            </div>
+                        </div>
+                        <div class="media-actions">
+                            <div class="btn-row">
+                                <button class="btn btn-success download-btn"><i class="fas fa-download"></i> Download</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="analysis-panel">
+                        <div class="panel-card">
+                            <div class="panel-header">
+                                <span class="panel-title">Detection Results</span>
+                            </div>
+                            <div class="detection-list"></div>
+                        </div>
+
+                        <div class="panel-card">
+                            <div class="panel-header">
+                                <span class="panel-title">Analysis Metrics</span>
+                            </div>
+                            <div class="metrics-grid">
+                                <div class="metric-item">
+                                    <div class="metric-value total-detections">0</div>
+                                    <div class="metric-label">Total Detections</div>
+                                </div>
+                                <div class="metric-item">
+                                    <div class="metric-value avg-confidence">0%</div>
+                                    <div class="metric-label">Avg Confidence</div>
+                                </div>
+                                <div class="metric-item">
+                                    <div class="metric-value processing-time">0ms</div>
+                                    <div class="metric-label">Processing Time</div>
+                                </div>
+                                <div class="metric-item">
+                                    <div class="metric-value detection-quality">--</div>
+                                    <div class="metric-label">Detection Quality</div>
+                                </div>
+                            </div>
+                            <div class="risk-level low">
+                                <div class="risk-label">Compliance Status</div>
+                                <div class="risk-value low">Compliant</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- INSPECTION PANEL -->
+            <div class="model-panel" id="inspectionPanel" data-model="inspection">
+                <div class="input-sources">
+                    <div class="source-card active" data-source="image">
+                        <div class="source-icon"><i class="fas fa-image"></i></div>
+                        <div class="source-title">Image Upload</div>
+                        <div class="source-desc">JPG, PNG, WebP</div>
+                    </div>
+                    <div class="source-card" data-source="video">
+                        <div class="source-icon"><i class="fas fa-video"></i></div>
+                        <div class="source-title">Video Upload</div>
+                        <div class="source-desc">MP4, AVI, MOV</div>
+                    </div>
+                    <div class="source-card" data-source="webcam">
+                        <div class="source-icon"><i class="fas fa-camera"></i></div>
+                        <div class="source-title">Live Camera</div>
+                        <div class="source-desc">Webcam/USB</div>
+                    </div>
+                    <div class="source-card" data-source="ipcamera">
+                        <div class="source-icon"><i class="fas fa-broadcast-tower"></i></div>
+                        <div class="source-title">IP Camera</div>
+                        <div class="source-desc">RTSP/HTTP Stream</div>
+                    </div>
+                </div>
+
+                <div class="input-section">
+                    <div class="input-header">
+                        <div class="input-title">Upload Media</div>
+                        <div class="live-indicator" id="inspectionLiveIndicator">
+                            <div class="live-dot"></div>
+                            <span>LIVE</span>
+                        </div>
+                    </div>
+
+                    <div class="upload-input active" data-input="upload">
+                        <div class="drop-zone" data-model="inspection">
+                            <div class="drop-zone-icon"><i class="fas fa-cloud-upload-alt"></i></div>
+                            <div class="drop-zone-text">Drop file here or click to browse</div>
+                            <div class="drop-zone-hint">Supports images and videos up to 500MB</div>
+                            <input type="file" class="file-input" accept="image/*,video/*">
+                        </div>
+                    </div>
+
+                    <div class="camera-input" data-input="webcam">
+                        <div class="btn-row">
+                            <button class="btn btn-primary start-webcam-btn"><i class="fas fa-video"></i> Start Webcam</button>
+                            <button class="btn btn-danger stop-webcam-btn" disabled><i class="fas fa-stop"></i> Stop</button>
+                        </div>
+                    </div>
+
+                    <div class="camera-input" data-input="ipcamera">
+                        <input type="text" class="camera-url-input" placeholder="Enter RTSP/HTTP stream URL (e.g., rtsp://192.168.1.100:554/stream)">
+                        <div class="btn-row">
+                            <button class="btn btn-primary connect-stream-btn"><i class="fas fa-plug"></i> Connect Stream</button>
+                            <button class="btn btn-danger disconnect-stream-btn" disabled><i class="fas fa-times"></i> Disconnect</button>
+                        </div>
+                    </div>
+
+                    <div class="btn-row">
+                        <button class="btn btn-primary analyze-btn" disabled><i class="fas fa-search"></i> Analyze</button>
+                        <button class="btn btn-secondary clear-btn"><i class="fas fa-trash"></i> Clear</button>
+                    </div>
+                </div>
+
+                <div class="results-grid hidden" data-results="inspection">
+                    <div class="media-panel">
+                        <div class="media-header">
+                            <div class="media-tabs">
+                                <button class="media-tab active" data-tab="detection">Detection</button>
+                                <button class="media-tab" data-tab="original">Original</button>
+                            </div>
+                            <div class="stream-controls hidden">
+                                <button class="btn btn-secondary btn-sm pause-btn"><i class="fas fa-pause"></i></button>
+                                <button class="btn btn-secondary btn-sm snapshot-btn"><i class="fas fa-camera"></i></button>
+                            </div>
+                        </div>
+                        <div class="media-container">
+                            <div class="media-inner">
+                                <img class="result-image" style="display:none;">
+                                <video class="result-video" controls style="display:none;"></video>
+                                <video class="live-feed" autoplay muted playsinline style="display:none;"></video>
+                                <canvas class="overlay-canvas"></canvas>
+                            </div>
+                        </div>
+                        <div class="media-actions">
+                            <div class="btn-row">
+                                <button class="btn btn-success download-btn"><i class="fas fa-download"></i> Download</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="analysis-panel">
+                        <div class="panel-card">
+                            <div class="panel-header">
+                                <span class="panel-title">Detection Results</span>
+                            </div>
+                            <div class="detection-list"></div>
+                        </div>
+
+                        <div class="panel-card">
+                            <div class="panel-header">
+                                <span class="panel-title">Analysis Metrics</span>
+                            </div>
+                            <div class="metrics-grid">
+                                <div class="metric-item">
+                                    <div class="metric-value total-detections">0</div>
+                                    <div class="metric-label">Total Detections</div>
+                                </div>
+                                <div class="metric-item">
+                                    <div class="metric-value avg-confidence">0%</div>
+                                    <div class="metric-label">Avg Confidence</div>
+                                </div>
+                                <div class="metric-item">
+                                    <div class="metric-value processing-time">0ms</div>
+                                    <div class="metric-label">Processing Time</div>
+                                </div>
+                                <div class="metric-item">
+                                    <div class="metric-value detection-quality">--</div>
+                                    <div class="metric-label">Detection Quality</div>
+                                </div>
+                            </div>
+                            <div class="risk-level low">
+                                <div class="risk-label">Inspection Status</div>
+                                <div class="risk-value low">Pass</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            InspectionVision v1.0 - Multi-Model AI Detection Dashboard
+        </div>
+    </div>
+
+    <script>
+        // ============================================
+        // Configuration
+        // ============================================
+        const CONFIG = {
+            MAX_FILE_SIZE: 500 * 1024 * 1024,
+            ALLOWED_IMAGE_TYPES: ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'],
+            ALLOWED_VIDEO_TYPES: ['video/mp4', 'video/avi', 'video/quicktime', 'video/x-msvideo'],
+            API_BASE_URL: window.location.origin,  // Use same origin
+            API_ENDPOINTS: {
+                corrosion: {
+                    image: '/api/detect/corrosion/image',
+                    video: '/api/detect/corrosion/video',
+                    stream: '/api/stream/corrosion'
+                },
+                ppe: {
+                    image: '/api/detect/ppe/image',
+                    video: '/api/detect/ppe/video',
+                    stream: '/api/stream/ppe'
+                },
+                inspection: {
+                    image: '/api/detect/inspection/image',
+                    video: '/api/detect/inspection/video',
+                    stream: '/api/stream/inspection'
+                }
+            },
+            CLASS_COLORS: {
+                corrosion: '#ff6b6b',
+                crack: '#ffb347',
+                leak: '#9b59b6',
+                'Person': '#e67e22',
+                'Gloves': '#1abc9c',
+                'Goggles': '#f39c12',
+                'Hardhat': '#3498db',
+                'Mask': '#e74c3c',
+                'Safety Vest': '#4ecdc4'
+            }
+        };
+
+        // ============================================
+        // State Management
+        // ============================================
+        const state = {
+            activeModel: 'corrosion',
+            activeSource: { corrosion: 'image', ppe: 'image', inspection: 'image' },
+            selectedFiles: { corrosion: null, ppe: null, inspection: null },
+            originalImages: { corrosion: null, ppe: null, inspection: null },
+            results: { corrosion: null, ppe: null, inspection: null },
+            streams: {
+                corrosion: { active: false, stream: null, interval: null },
+                ppe: { active: false, stream: null, interval: null },
+                inspection: { active: false, stream: null, interval: null }
+            },
+            stats: { corrosion: 0, ppe: 0, inspection: 0, activeStreams: 0 }
+        };
+
+        // ============================================
+        // DOM Elements
+        // ============================================
+        const elements = {
+            loadingOverlay: document.getElementById('loadingOverlay'),
+            loadingText: document.getElementById('loadingText'),
+            errorMessage: document.getElementById('errorMessage'),
+            modelTabs: document.querySelectorAll('.model-tab'),
+            modelPanels: document.querySelectorAll('.model-panel'),
+            navLinks: document.querySelectorAll('.nav-link')
+        };
+
+        // ============================================
+        // Utility Functions
+        // ============================================
+        function showError(message) {
+            elements.errorMessage.textContent = message;
+            elements.errorMessage.classList.add('active');
+            setTimeout(() => elements.errorMessage.classList.remove('active'), 5000);
+        }
+
+        function showLoading(show, text = 'Processing...') {
+            elements.loadingText.textContent = text;
+            elements.loadingOverlay.classList.toggle('active', show);
+        }
+
+        function validateFile(file) {
+            if (file.size > CONFIG.MAX_FILE_SIZE) {
+                throw new Error(`File too large. Maximum size is ${CONFIG.MAX_FILE_SIZE / (1024 * 1024)}MB`);
+            }
+            const isImage = CONFIG.ALLOWED_IMAGE_TYPES.includes(file.type);
+            const isVideo = CONFIG.ALLOWED_VIDEO_TYPES.includes(file.type);
+            if (!isImage && !isVideo) {
+                throw new Error('Invalid file type. Allowed: Images (JPG, PNG, WebP) and Videos (MP4, AVI, MOV)');
+            }
+            return isImage ? 'image' : 'video';
+        }
+
+        // ============================================
+        // Model Tab Switching
+        // ============================================
+        elements.modelTabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                const model = tab.dataset.model;
+                state.activeModel = model;
+                
+                // Update model tabs
+                elements.modelTabs.forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                
+                // Update model panels
+                elements.modelPanels.forEach(p => {
+                    p.classList.toggle('active', p.dataset.model === model);
+                });
+                
+                // Sync nav links
+                elements.navLinks.forEach(link => {
+                    link.classList.toggle('active', link.dataset.section === model);
+                });
+            });
+        });
+
+        // ============================================
+        // Navigation Links
+        // ============================================
+        elements.navLinks.forEach(link => {
+            link.addEventListener('click', () => {
+                const section = link.dataset.section;
+                
+                // Update nav links
+                elements.navLinks.forEach(l => l.classList.remove('active'));
+                link.classList.add('active');
+                
+                // Switch to corresponding model
+                if (section !== 'dashboard') {
+                    const modelTab = document.querySelector(`.model-tab[data-model="${section}"]`);
+                    if (modelTab) {
+                        // Trigger the model tab click to maintain state consistency
+                        modelTab.click();
+                    }
+                }
+            });
+        });
+
+        // ============================================
+        // Input Source Selection
+        // ============================================
+        document.querySelectorAll('.source-card').forEach(card => {
+            card.addEventListener('click', function() {
+                const panel = this.closest('.model-panel');
+                const model = panel.dataset.model;
+                const source = this.dataset.source;
+                state.activeSource[model] = source;
+                panel.querySelectorAll('.source-card').forEach(c => c.classList.remove('active'));
+                this.classList.add('active');
+                const inputSection = panel.querySelector('.input-section');
+                inputSection.querySelectorAll('.upload-input, .camera-input').forEach(input => {
+                    input.classList.remove('active');
+                });
+                if (source === 'image' || source === 'video') {
+                    inputSection.querySelector('.upload-input').classList.add('active');
+                } else if (source === 'webcam') {
+                    inputSection.querySelector('[data-input="webcam"]').classList.add('active');
+                } else if (source === 'ipcamera') {
+                    inputSection.querySelector('[data-input="ipcamera"]').classList.add('active');
+                }
+            });
+        });
+
+        // ============================================
+        // File Upload Handling
+        // ============================================
+        document.querySelectorAll('.drop-zone').forEach(dropZone => {
+            const model = dropZone.dataset.model;
+            const fileInput = dropZone.querySelector('.file-input');
+            const panel = dropZone.closest('.model-panel');
+
+            dropZone.addEventListener('click', () => fileInput.click());
+            dropZone.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                dropZone.classList.add('dragover');
+            });
+            dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+            dropZone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                dropZone.classList.remove('dragover');
+                if (e.dataTransfer.files.length) {
+                    handleFileSelect(model, e.dataTransfer.files[0], dropZone, panel);
+                }
+            });
+            fileInput.addEventListener('change', () => {
+                if (fileInput.files.length) {
+                    handleFileSelect(model, fileInput.files[0], dropZone, panel);
+                }
+            });
+        });
+
+        function handleFileSelect(model, file, dropZone, panel) {
+            try {
+                const fileType = validateFile(file);
+                state.selectedFiles[model] = { file, type: fileType };
+                state.activeSource[model] = fileType;
+                dropZone.querySelector('.drop-zone-text').textContent = file.name;
+                panel.querySelector('.analyze-btn').disabled = false;
+                if (fileType === 'image') {
+                    const reader = new FileReader();
+                    reader.onload = (e) => { state.originalImages[model] = e.target.result; };
+                    reader.readAsDataURL(file);
+                }
+            } catch (error) {
+                showError(error.message);
+                dropZone.querySelector('input').value = '';
+            }
+        }
+
+        // ============================================
+        // Analyze Button Click
+        // ============================================
+        document.querySelectorAll('.analyze-btn').forEach(btn => {
+            btn.addEventListener('click', async function() {
+                const panel = this.closest('.model-panel');
+                const model = panel.dataset.model;
+                const fileData = state.selectedFiles[model];
+                if (!fileData) return;
+
+                const endpoint = CONFIG.API_ENDPOINTS[model][fileData.type];
+                showLoading(true, `Analyzing ${fileData.type} with ${model} model...`);
+
+                try {
+                    const formData = new FormData();
+                    formData.append('file', fileData.file);
+                    const response = await fetch(endpoint, { method: 'POST', body: formData });
+                    if (!response.ok) {
+                        const error = await response.json();
+                        throw new Error(error.detail || 'Analysis failed');
+                    }
+                    const data = await response.json();
+                    state.results[model] = data;
+                    await displayResults(model, data, fileData.type);
+                    updateStats(model, data);
+                } catch (error) {
+                    showError('Error: ' + error.message);
+                    console.error('Analysis error:', error);
+                } finally {
+                    showLoading(false);
+                }
+            });
+        });
+
+        // ============================================
+        // Clear Button Click
+        // ============================================
+        document.querySelectorAll('.clear-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const panel = this.closest('.model-panel');
+                const model = panel.dataset.model;
+                state.selectedFiles[model] = null;
+                state.originalImages[model] = null;
+                state.results[model] = null;
+                if (state.detectionVideos) state.detectionVideos[model] = null;
+                if (state.originalVideos) {
+                    if (state.originalVideos[model]) URL.revokeObjectURL(state.originalVideos[model]);
+                    state.originalVideos[model] = null;
+                }
+                const dropZone = panel.querySelector('.drop-zone');
+                dropZone.querySelector('.drop-zone-text').textContent = 'Drop file here or click to browse';
+                dropZone.querySelector('input').value = '';
+                panel.querySelector('.analyze-btn').disabled = true;
+                panel.querySelector('.result-video').style.display = 'none';
+                panel.querySelector('.result-video').removeAttribute('src');
+                panel.querySelector('.results-grid').classList.add('hidden');
+            });
+        });
+
+        // ============================================
+        // Display Results
+        // ============================================
+        async function displayResults(model, data, mediaType) {
+            const panel = document.querySelector(`.model-panel[data-model="${model}"]`);
+            const resultsGrid = panel.querySelector('.results-grid');
+            resultsGrid.classList.remove('hidden');
+
+            const resultImage = panel.querySelector('.result-image');
+            const resultVideo = panel.querySelector('.result-video');
+            const overlayCanvas = panel.querySelector('.overlay-canvas');
+
+            if (mediaType === 'image') {
+                resultImage.src = data.annotated_image || state.originalImages[model];
+                resultImage.style.display = 'block';
+                resultVideo.style.display = 'none';
+                // Clear any previous overlay - backend provides annotated image with accurate boxes
+                resultImage.onload = () => {
+                    const ctx = overlayCanvas.getContext('2d');
+                    ctx.clearRect(0, 0, overlayCanvas.width, overlayCanvas.height);
+                };
+            } else {
+                resultImage.style.display = 'none';
+                overlayCanvas.style.display = 'none';
+                if (data.video_url) {
+                    let vurl = data.video_url;
+                    if (!/^https?:\/\//i.test(vurl) && !vurl.startsWith('/')) vurl = '/' + vurl;
+                    // Add cache-buster to avoid stale cached responses
+                    vurl += (vurl.includes('?') ? '&' : '?') + 't=' + Date.now();
+
+                    // Store the detection video URL for tab switching
+                    state.detectionVideos = state.detectionVideos || {};
+                    state.detectionVideos[model] = vurl;
+
+                    // Store original video as object URL for tab switching
+                    if (state.selectedFiles[model] && state.selectedFiles[model].file) {
+                        state.originalVideos = state.originalVideos || {};
+                        state.originalVideos[model] = URL.createObjectURL(state.selectedFiles[model].file);
+                    }
+
+                    // Set video source and add error handling
+                    resultVideo.onerror = function() {
+                        console.error('Video playback error:', resultVideo.error);
+                        showError('Video format not supported by browser. Try a different video file.');
+                    };
+                    resultVideo.src = vurl;
+                    resultVideo.style.display = 'block';
+                    resultVideo.load();
+                } else {
+                    resultVideo.style.display = 'none';
+                    showError('No video URL returned from server.');
+                }
+            }
+
+            displayDetectionList(panel, data);
+            displayMetrics(panel, data);
+            resultsGrid.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        function drawDetectionBoxes(model, data, img, canvas) {
+            const ctx = canvas.getContext('2d');
+            const rect = img.getBoundingClientRect();
+            const dpr = window.devicePixelRatio || 1;
+
+            canvas.style.width = rect.width + 'px';
+            canvas.style.height = rect.height + 'px';
+            canvas.width = rect.width * dpr;
+            canvas.height = rect.height * dpr;
+
+            ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            const scaleX = rect.width / img.naturalWidth;
+            const scaleY = rect.height / img.naturalHeight;
+
+            const allDetections = [];
+            if (data.detections) allDetections.push(...data.detections);
+            
+            const classNames = Object.keys(CONFIG.CLASS_COLORS);
+            classNames.forEach(className => {
+                if (data[className] && data[className].regions) {
+                    data[className].regions.forEach(region => {
+                        allDetections.push({ ...region, class_name: className });
+                    });
+                }
+            });
+
+            allDetections.forEach(det => {
+                const color = CONFIG.CLASS_COLORS[det.class_name] || '#00ff00';
+                const bbox = det.bbox || det;
+                
+                let x, y, w, h;
+                if (Array.isArray(bbox)) {
+                    [x, y, w, h] = bbox;
+                } else {
+                    x = bbox.x || bbox[0];
+                    y = bbox.y || bbox[1];
+                    w = bbox.width || bbox[2];
+                    h = bbox.height || bbox[3];
+                }
+
+                const sx = x * scaleX;
+                const sy = y * scaleY;
+                const sw = w * scaleX;
+                const sh = h * scaleY;
+
+                ctx.strokeStyle = color;
+                ctx.lineWidth = 2;
+                ctx.strokeRect(sx, sy, sw, sh);
+
+                const label = `${det.class_name} ${((det.confidence || 0) * 100).toFixed(0)}%`;
+                ctx.font = '12px Poppins, sans-serif';
+                const textWidth = ctx.measureText(label).width;
+
+                ctx.fillStyle = color;
+                ctx.globalAlpha = 0.85;
+                ctx.fillRect(sx, Math.max(0, sy - 18), textWidth + 8, 18);
+                ctx.globalAlpha = 1;
+                ctx.fillStyle = '#fff';
+                ctx.fillText(label, sx + 4, Math.max(14, sy - 4));
+            });
+
+            canvas.style.display = 'block';
+        }
+
+        function displayDetectionList(panel, data) {
+            const detectionList = panel.querySelector('.detection-list');
+            let html = '';
+
+            const classCounts = {};
+            const classConfidences = {};
+
+            const processDetections = (regions, className) => {
+                if (!regions || !regions.length) return;
+                regions.forEach(det => {
+                    const cls = det.class_name || className;
+                    classCounts[cls] = (classCounts[cls] || 0) + 1;
+                    classConfidences[cls] = classConfidences[cls] || [];
+                    classConfidences[cls].push(det.confidence || 0);
+                });
+            };
+
+            Object.keys(CONFIG.CLASS_COLORS).forEach(className => {
+                if (data[className]) {
+                    if (data[className].regions && data[className].regions.length) {
+                        processDetections(data[className].regions, className);
+                    } else if (data[className].count > 0) {
+                        // Video results: no per-detection regions, use summary count/confidence
+                        classCounts[className] = (classCounts[className] || 0) + data[className].count;
+                        classConfidences[className] = classConfidences[className] || [];
+                        classConfidences[className].push(data[className].avg_confidence || 0);
+                    }
+                }
+            });
+
+            // Also check class_results map (video responses include this)
+            if (data.class_results) {
+                Object.keys(data.class_results).forEach(className => {
+                    const cr = data.class_results[className];
+                    if (cr && cr.count > 0 && !classCounts[className]) {
+                        classCounts[className] = cr.count;
+                        classConfidences[className] = [cr.avg_confidence || 0];
+                    }
+                });
+            }
+
+            if (data.detections) {
+                data.detections.forEach(det => {
+                    const cls = det.class_name;
+                    classCounts[cls] = (classCounts[cls] || 0) + 1;
+                    classConfidences[cls] = classConfidences[cls] || [];
+                    classConfidences[cls].push(det.confidence || 0);
+                });
+            }
+
+            Object.keys(classCounts).forEach(cls => {
+                const count = classCounts[cls];
+                const avgConf = classConfidences[cls].reduce((a, b) => a + b, 0) / classConfidences[cls].length;
+                html += `
+                    <div class="detection-item">
+                        <div class="detection-class">
+                            <div class="class-dot ${cls}"></div>
+                            <span class="class-name">${cls.charAt(0).toUpperCase() + cls.slice(1)}</span>
+                            <span class="class-count">(${count})</span>
+                        </div>
+                        <span class="detection-confidence">${(avgConf * 100).toFixed(1)}%</span>
+                    </div>
+                `;
+            });
+
+            if (!html) {
+                html = '<div class="detection-item"><span class="class-name" style="color: var(--text-muted);">No detections found</span></div>';
+            }
+
+            detectionList.innerHTML = html;
+        }
+
+        function displayMetrics(panel, data) {
+            const totalDetections = data.total_detections || 0;
+            
+            // Calculate avg_confidence from class_results if not provided directly
+            let avgConfidence = data.avg_confidence || 0;
+            if (!avgConfidence && data.class_results) {
+                let totalConf = 0;
+                let confCount = 0;
+                Object.values(data.class_results).forEach(result => {
+                    if (result && result.regions && result.regions.length) {
+                        result.regions.forEach(det => {
+                            totalConf += det.confidence || 0;
+                            confCount++;
+                        });
+                    } else if (result && result.count > 0 && result.avg_confidence) {
+                        // Video results: use summary avg_confidence weighted by count
+                        totalConf += result.avg_confidence * result.count;
+                        confCount += result.count;
+                    }
+                });
+                avgConfidence = confCount > 0 ? totalConf / confCount : 0;
+            }
+            
+            const processingTime = data.processing_time || 0;
+
+            panel.querySelector('.total-detections').textContent = totalDetections;
+            panel.querySelector('.avg-confidence').textContent = (avgConfidence * 100).toFixed(1) + '%';
+            panel.querySelector('.processing-time').textContent = (processingTime * 1000).toFixed(0) + 'ms';
+
+            // Quality based on confidence
+            let quality = '--';
+            if (totalDetections > 0) {
+                quality = avgConfidence >= 0.8 ? 'High' : avgConfidence >= 0.5 ? 'Good' : avgConfidence >= 0.3 ? 'Fair' : 'Low';
+            }
+            panel.querySelector('.detection-quality').textContent = quality;
+
+            // Risk level based on detection type and count
+            const riskLevel = calculateRiskLevel(data, avgConfidence);
+            const riskContainer = panel.querySelector('.risk-level');
+            const riskValue = panel.querySelector('.risk-value');
+            
+            riskValue.textContent = riskLevel;
+            riskValue.className = 'risk-value ' + riskLevel.toLowerCase();
+            riskContainer.className = 'risk-level ' + riskLevel.toLowerCase();
+        }
+
+        function calculateRiskLevel(data, avgConfidence) {
+            const totalDetections = data.total_detections || 0;
+            const conf = avgConfidence || data.avg_confidence || 0;
+
+            if (totalDetections === 0) return 'None';
+            if (totalDetections >= 5 && conf >= 0.7) return 'Critical';
+            if (totalDetections >= 3 && conf >= 0.5) return 'High';
+            if (totalDetections >= 1) return 'Medium';
+            return 'Low';
+        }
+
+        function updateStats(model, data) {
+            state.stats[model] = data.total_detections || 0;
+            // Stats elements may not exist after removal
+            const corrosionEl = document.getElementById('corrosionCount');
+            const ppeEl = document.getElementById('ppeCount');
+            const inspectionEl = document.getElementById('inspectionCount');
+            if (corrosionEl) corrosionEl.textContent = state.stats.corrosion;
+            if (ppeEl) ppeEl.textContent = state.stats.ppe;
+            if (inspectionEl) inspectionEl.textContent = state.stats.inspection;
+        }
+
+        // ============================================
+        // Media Tab Switching
+        // ============================================
+        document.querySelectorAll('.media-tab').forEach(tab => {
+            tab.addEventListener('click', function() {
+                const panel = this.closest('.model-panel');
+                const model = panel.dataset.model;
+                const tabType = this.dataset.tab;
+
+                panel.querySelectorAll('.media-tab').forEach(t => t.classList.remove('active'));
+                this.classList.add('active');
+
+                const resultImage = panel.querySelector('.result-image');
+                const resultVideo = panel.querySelector('.result-video');
+                const data = state.results[model];
+
+                // Check if we're in video mode
+                const isVideoMode = resultVideo.style.display === 'block' ||
+                    (state.detectionVideos && state.detectionVideos[model]);
+
+                if (isVideoMode) {
+                    // Handle video tab switching
+                    resultImage.style.display = 'none';
+                    panel.querySelector('.overlay-canvas').style.display = 'none';
+                    if (tabType === 'original' && state.originalVideos && state.originalVideos[model]) {
+                        resultVideo.src = state.originalVideos[model];
+                        resultVideo.style.display = 'block';
+                        resultVideo.load();
+                    } else if (state.detectionVideos && state.detectionVideos[model]) {
+                        resultVideo.src = state.detectionVideos[model];
+                        resultVideo.style.display = 'block';
+                        resultVideo.load();
+                    }
+                } else {
+                    // Handle image tab switching
+                    if (tabType === 'original' && state.originalImages[model]) {
+                        resultImage.src = state.originalImages[model];
+                        panel.querySelector('.overlay-canvas').style.display = 'none';
+                    } else if (data && data.annotated_image) {
+                        resultImage.src = data.annotated_image;
+                        // Backend provides annotated image - no need for frontend drawing
+                        resultImage.onload = () => {
+                            const overlayCanvas = panel.querySelector('.overlay-canvas');
+                            if (overlayCanvas) {
+                                const ctx = overlayCanvas.getContext('2d');
+                                ctx.clearRect(0, 0, overlayCanvas.width, overlayCanvas.height);
+                            }
+                        };
+                    }
+                }
+            });
+        });
+
+        // ============================================
+        // Webcam Handling
+        // ============================================
+        document.querySelectorAll('.start-webcam-btn').forEach(btn => {
+            btn.addEventListener('click', async function() {
+                const panel = this.closest('.model-panel');
+                const model = panel.dataset.model;
+                const liveFeed = panel.querySelector('.live-feed');
+                const stopBtn = panel.querySelector('.stop-webcam-btn');
+                const liveIndicator = panel.querySelector('.live-indicator');
+
+                try {
+                    const stream = await navigator.mediaDevices.getUserMedia({
+                        video: { width: 1280, height: 720 }
+                    });
+
+                    state.streams[model].stream = stream;
+                    state.streams[model].active = true;
+
+                    liveFeed.srcObject = stream;
+                    liveFeed.style.display = 'block';
+                    panel.querySelector('.result-image').style.display = 'none';
+                    panel.querySelector('.result-video').style.display = 'none';
+                    panel.querySelector('.results-grid').classList.remove('hidden');
+
+                    this.disabled = true;
+                    stopBtn.disabled = false;
+                    liveIndicator.classList.add('active');
+
+                    state.stats.activeStreams++;
+                    const streamCountEl = document.getElementById('streamCount');
+                    if (streamCountEl) streamCountEl.textContent = state.stats.activeStreams;
+
+                    startRealtimeDetection(model, panel);
+
+                } catch (error) {
+                    showError('Failed to access webcam: ' + error.message);
+                }
+            });
+        });
+
+        document.querySelectorAll('.stop-webcam-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const panel = this.closest('.model-panel');
+                const model = panel.dataset.model;
+                stopStream(model, panel);
+            });
+        });
+
+        function stopStream(model, panel) {
+            const streamData = state.streams[model];
+
+            if (streamData.stream) {
+                streamData.stream.getTracks().forEach(track => track.stop());
+                streamData.stream = null;
+            }
+
+            if (streamData.interval) {
+                clearInterval(streamData.interval);
+                streamData.interval = null;
+            }
+
+            streamData.active = false;
+
+            const liveFeed = panel.querySelector('.live-feed');
+            liveFeed.srcObject = null;
+            liveFeed.style.display = 'none';
+
+            panel.querySelector('.start-webcam-btn').disabled = false;
+            panel.querySelector('.stop-webcam-btn').disabled = true;
+            panel.querySelector('.live-indicator').classList.remove('active');
+
+            state.stats.activeStreams = Math.max(0, state.stats.activeStreams - 1);
+            const streamCountEl = document.getElementById('streamCount');
+            if (streamCountEl) streamCountEl.textContent = state.stats.activeStreams;
+        }
+
+        // ============================================
+        // IP Camera Handling
+        // ============================================
+        document.querySelectorAll('.connect-stream-btn').forEach(btn => {
+            btn.addEventListener('click', async function() {
+                const panel = this.closest('.model-panel');
+                const model = panel.dataset.model;
+                const urlInput = panel.querySelector('.camera-url-input');
+                const streamUrl = urlInput.value.trim();
+
+                if (!streamUrl) {
+                    showError('Please enter a stream URL');
+                    return;
+                }
+
+                showLoading(true, 'Connecting to IP camera...');
+
+                try {
+                    const response = await fetch(CONFIG.API_ENDPOINTS[model].stream, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ stream_url: streamUrl })
+                    });
+
+                    if (!response.ok) throw new Error('Failed to connect to stream');
+
+                    const data = await response.json();
+                    
+                    state.streams[model].active = true;
+                    const disconnectBtn = panel.querySelector('.disconnect-stream-btn');
+                    this.disabled = true;
+                    disconnectBtn.disabled = false;
+                    panel.querySelector('.live-indicator').classList.add('active');
+                    panel.querySelector('.results-grid').classList.remove('hidden');
+
+                    state.stats.activeStreams++;
+                    const streamCountEl = document.getElementById('streamCount');
+                    if (streamCountEl) streamCountEl.textContent = state.stats.activeStreams;
+
+                    startStreamPolling(model, panel, data.stream_id);
+
+                } catch (error) {
+                    showError('Failed to connect: ' + error.message);
+                } finally {
+                    showLoading(false);
+                }
+            });
+        });
+
+        document.querySelectorAll('.disconnect-stream-btn').forEach(btn => {
+            btn.addEventListener('click', async function() {
+                const panel = this.closest('.model-panel');
+                const model = panel.dataset.model;
+                stopStream(model, panel);
+                panel.querySelector('.connect-stream-btn').disabled = false;
+                this.disabled = true;
+            });
+        });
+
+        // ============================================
+        // Real-time Detection (for webcam)
+        // ============================================
+        function startRealtimeDetection(model, panel) {
+            const liveFeed = panel.querySelector('.live-feed');
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            const overlayCanvas = panel.querySelector('.overlay-canvas');
+
+            const processFrame = async () => {
+                if (!state.streams[model].active) return;
+
+                canvas.width = liveFeed.videoWidth;
+                canvas.height = liveFeed.videoHeight;
+                ctx.drawImage(liveFeed, 0, 0);
+
+                try {
+                    const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', 0.8));
+                    const formData = new FormData();
+                    formData.append('file', blob, 'frame.jpg');
+
+                    const response = await fetch(CONFIG.API_ENDPOINTS[model].image, {
+                        method: 'POST',
+                        body: formData
+                    });
+
+                    if (response.ok) {
+                        const data = await response.json();
+                        state.results[model] = data;
+                        drawLiveDetections(data, liveFeed, overlayCanvas);
+                        displayMetrics(panel, data);
+                        displayDetectionList(panel, data);
+                        updateStats(model, data);
+                    }
+                } catch (error) {
+                    console.error('Frame processing error:', error);
+                }
+            };
+
+            state.streams[model].interval = setInterval(processFrame, 200);
+        }
+
+        function drawLiveDetections(data, videoElement, canvas) {
+            const ctx = canvas.getContext('2d');
+            const rect = videoElement.getBoundingClientRect();
+            
+            canvas.style.width = rect.width + 'px';
+            canvas.style.height = rect.height + 'px';
+            canvas.width = rect.width;
+            canvas.height = rect.height;
+            
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            const scaleX = canvas.width / videoElement.videoWidth;
+            const scaleY = canvas.height / videoElement.videoHeight;
+
+            const allDetections = [];
+            Object.keys(CONFIG.CLASS_COLORS).forEach(className => {
+                if (data[className] && data[className].regions) {
+                    data[className].regions.forEach(region => {
+                        allDetections.push({ ...region, class_name: className });
+                    });
+                }
+            });
+            if (data.detections) allDetections.push(...data.detections);
+
+            allDetections.forEach(det => {
+                const color = CONFIG.CLASS_COLORS[det.class_name] || '#00ff00';
+                const bbox = det.bbox || det;
+                
+                let x, y, w, h;
+                if (Array.isArray(bbox)) {
+                    [x, y, w, h] = bbox;
+                } else {
+                    x = bbox.x || bbox[0];
+                    y = bbox.y || bbox[1];
+                    w = bbox.width || bbox[2];
+                    h = bbox.height || bbox[3];
+                }
+
+                const sx = x * scaleX;
+                const sy = y * scaleY;
+                const sw = w * scaleX;
+                const sh = h * scaleY;
+
+                ctx.strokeStyle = color;
+                ctx.lineWidth = 3;
+                ctx.strokeRect(sx, sy, sw, sh);
+
+                const label = `${det.class_name} ${((det.confidence || 0) * 100).toFixed(0)}%`;
+                ctx.font = 'bold 14px Poppins, sans-serif';
+                const textWidth = ctx.measureText(label).width;
+
+                ctx.fillStyle = color;
+                ctx.globalAlpha = 0.85;
+                ctx.fillRect(sx, Math.max(0, sy - 22), textWidth + 10, 22);
+                ctx.globalAlpha = 1;
+                ctx.fillStyle = '#fff';
+                ctx.fillText(label, sx + 5, Math.max(16, sy - 6));
+            });
+
+            canvas.style.display = 'block';
+        }
+
+        // ============================================
+        // Stream Polling (for IP cameras)
+        // ============================================
+        function startStreamPolling(model, panel, streamId) {
+            const resultImage = panel.querySelector('.result-image');
+            const overlayCanvas = panel.querySelector('.overlay-canvas');
+
+            const pollFrame = async () => {
+                if (!state.streams[model].active) return;
+
+                try {
+                    const response = await fetch(`/api/stream/${model}/frame?stream_id=${streamId}`);
+                    
+                    if (response.ok) {
+                        const data = await response.json();
+                        
+                        if (data.frame) {
+                            resultImage.src = data.frame;
+                            resultImage.style.display = 'block';
+                            // Backend provides annotated frame - no frontend drawing needed
+                        }
+
+                        if (data.detections) {
+                            state.results[model] = data;
+                            displayMetrics(panel, data);
+                            displayDetectionList(panel, data);
+                            updateStats(model, data);
+                        }
+                    }
+                } catch (error) {
+                    console.error('Stream polling error:', error);
+                }
+            };
+
+            state.streams[model].interval = setInterval(pollFrame, 100);
+        }
+
+        // ============================================
+        // Download Functionality
+        // ============================================
+        document.querySelectorAll('.download-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const panel = this.closest('.model-panel');
+                const model = panel.dataset.model;
+                const resultImage = panel.querySelector('.result-image');
+                const resultVideo = panel.querySelector('.result-video');
+
+                if (resultImage.style.display !== 'none' && resultImage.src) {
+                    const link = document.createElement('a');
+                    link.download = `${model}_detection_${Date.now()}.jpg`;
+                    link.href = resultImage.src;
+                    link.click();
+                } else if (resultVideo.style.display !== 'none' && resultVideo.src) {
+                    const link = document.createElement('a');
+                    link.download = `${model}_detection_${Date.now()}.mp4`;
+                    link.href = resultVideo.src;
+                    link.click();
+                }
+            });
+        });
+
+        // ============================================
+        // Window Resize Handler
+        // ============================================
+        window.addEventListener('resize', () => {
+            // Backend provides annotated images - no need to redraw boxes on resize
+            // The image will scale naturally with CSS
+        });
+
+        // ============================================
+        // Theme Toggle (Dark/Light Mode)
+        // ============================================
+        function initTheme() {
+            // Check if user prefers light mode through system preferences
+            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            const savedTheme = localStorage.getItem('theme');
+            const theme = savedTheme || (prefersDark ? 'dark' : 'dark');
+            
+            document.documentElement.setAttribute('data-theme', theme);
+            document.body.setAttribute('data-theme', theme);
+        }
+
+        function toggleTheme() {
+            const html = document.documentElement;
+            const currentTheme = html.getAttribute('data-theme') || 'dark';
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            
+            // Update both HTML and body elements
+            html.setAttribute('data-theme', newTheme);
+            document.body.setAttribute('data-theme', newTheme);
+            
+            // Save preference
+            localStorage.setItem('theme', newTheme);
+            
+            console.log(`Theme switched to: ${newTheme}`);
+        }
+
+        // Initialize theme on load
+        document.addEventListener('DOMContentLoaded', initTheme);
+        
+        // Also call it immediately in case jQuery already loaded
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initTheme);
+        } else {
+            initTheme();
+        }
+
+        // Theme toggle button event - use addEventListener to avoid conflicts
+        document.addEventListener('DOMContentLoaded', () => {
+            const themeToggleBtn = document.getElementById('themeToggle');
+            if (themeToggleBtn) {
+                themeToggleBtn.addEventListener('click', toggleTheme);
+            }
+        });
+
+        console.log('Inspection Dashboard v1.0 initialized');
+    </script>
+</body>
+</html>
