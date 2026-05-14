@@ -157,7 +157,7 @@ If you prefer to run without Docker or need to modify the code:
 
 #### Step 1: Install Python
 
-Ensure Python 3.8+ is installed:
+Ensure Python 3.10+ is installed:
 ```bash
 python --version
 ```
@@ -390,7 +390,7 @@ Available models for `{model}` parameter:
 - **Use Cases**: Equipment monitoring, facility inspection, anomaly detection
 - **Classes**: Various equipment and facility components
 
-All models are based on **YOLOv8** architecture and optimized for real-time inference.
+All models are based on **YOLOv12** architecture and optimized for real-time inference.
 
 ---
 
