@@ -1,4 +1,4 @@
-# 🔍 InspectionVision - AI-Powered Multi-Model Detection System
+#  InspectionVision - AI-Powered Multi-Model Detection System
 
 A FastAPI-based multi-model detection system supporting Corrosion Detection, PPE (Personal Protective Equipment) Detection, and General Inspection Detection with real-time IP camera streaming capabilities.
 
@@ -581,7 +581,7 @@ For issues and questions:
 
 ##  Version History
 
-- **v1.0.0** - Initial release with multi-model support
+- **v1.0.0** - Initial multi-model support
   - Corrosion detection model
   - PPE detection model
   - Inspection detection model
